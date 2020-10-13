@@ -40,6 +40,12 @@ router.post("/findUser",(req,res)=>{
 router.post("/updateUser",(req,res)=>{ 
     user["updateUser"](req,res);
 })
+router.post("/checkPwd",(req,res)=>{ 
+    user["checkPwd"](req,res);
+})
+router.post("/updatePwd",(req,res)=>{ 
+    user["updatePwd"](req,res);
+})
 
 
 

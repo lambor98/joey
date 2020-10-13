@@ -1,3 +1,11 @@
+/*
+ * @Author: your name
+ * @Date: 2020-06-07 21:10:53
+ * @LastEditTime: 2020-10-12 23:43:19
+ * @LastEditors: your name
+ * @Description: In User Settings Edit
+ * @FilePath: \git项目\joey\app.js
+ */
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -37,7 +45,7 @@ app.use(session({
   secret : "test",//生成签名的字符串  自定义即可
   name : "exp" , //发送到客户端key的名字 也是自定义
   cookie : {
-    maxAge :  60 * 1000 * 30 //毫秒为单位  设置session的有效时长
+    maxAge :  1000 * 60 * 60 * 24  //毫秒为单位  设置session的有效时长
   },
   resave : false,
   saveUninitialized : true

@@ -24,7 +24,7 @@ module.exports = {
          if(flag1 && flag2){
              user.find({uname}).toArray((err,list)=>{
                     if(list[0]){
-                        res.json(msg(500,"账号已存在"))
+                        res.json(msg(400,"账号已存在"))
                     }else{
                         user.find({}).sort({id:-1}).limit(1).toArray((err,list)=>{
                             let id = null;
@@ -37,7 +37,7 @@ module.exports = {
                                 if(!err){
                                     res.json(msg(200,"注册成功"));
                                 }else{
-                                    res.json(msg(500,"注册失败"));
+                                    res.json(msg(400,"注册失败"));
                                 }
                             })
                            
@@ -46,7 +46,7 @@ module.exports = {
                     }
              })
          }else{
-             res.json(msg(500,"账号不符合要求"));
+             res.json(msg(400,"账号不符合要求"));
          }
 
      },
@@ -61,7 +61,7 @@ module.exports = {
                 res.json(msg(200,"登陆成功",req.session.userObj));
                 
             }else{
-                res.json(msg(500,"用户名密码错误")); 
+                res.json(msg(400,"用户名密码错误")); 
             }
         })
         // console.log(req.body)
@@ -69,14 +69,7 @@ module.exports = {
      //验证登录
      confirmLog(req,res){
          if( req.session.userObj){
-            let username = req.session.userObj.uname
-            let uname = req.body.uname
-            console.log(username+"+"+uname)
-            if(uname == username){
-               res.json(msg(200))
-            }else{
-               res.json(msg(400))
-            }
+            res.json(msg(200))
          }else{
             res.json(msg(400))
          }
@@ -93,7 +86,7 @@ module.exports = {
         let dataBuffer = new Buffer.from(base64Data, 'base64');
         require('fs').writeFile('./images/idPic/'+fileName+'.'+fileType, dataBuffer, function(err) {
             if(err){
-                res.json(msg(500,'上传失败'))
+                res.json(msg(400,'上传失败'))
             }else{
                 res.json(msg(200,'成功',{fileName:fileName+"."+fileType}))
             }
@@ -116,22 +109,27 @@ module.exports = {
                 if(!err){
                     res.json(msg(200,'申请成功'));
                 }else{
-                    res.json(msg(500,'提交失败'));
+                    res.json(msg(400,'提交失败'));
                 }
             })
         })
        
     },
     findUser(req,res){
-        let {id} = req.body;
+        // let {id} = req.body;
         // console.log(req.body)
-        getcoll('user').find({id}).toArray((err,list)=>{
-            if(list[0]){
-                res.json(msg(200,'',list[0]))
-            }else{
-                res.json(msg(500,'不存在该用户'))
-            }
-        })
+        if(req.session.userObj){
+            res.json(msg(200,'',req.session.userObj))
+        }else{
+            res.json(msg(400,'未登录'))
+        }
+        // getcoll('user').find({id}).toArray((err,list)=>{
+        //     if(list[0]){
+        //         res.json(msg(200,'',list[0]))
+        //     }else{
+        //         res.json(msg(400,'不存在该用户'))
+        //     }
+        // })
         
     },
     updateUser(req,res){
@@ -146,8 +144,35 @@ module.exports = {
             if(!err){
                 res.json(msg(200,'修改成功'));
             }else{
-                res.json(msg(500,'修改失败'));
+                res.json(msg(400,'修改失败'));
             }
         })
+    },
+    checkPwd(req,res){
+        if(req.session.userObj){
+            if(req.body.pwd==req.session.userObj.pwd){
+                res.json(msg(200,'确认成功'))
+            }else{
+                res.json(msg(400,'原密码错误'))
+            }
+        }else{
+            res.json(msg(500,'未登录'))
+        }
+    },
+    updatePwd(req,res){
+        let pwd = req.body.pwd;
+        if(req.session.userObj){
+            let id = req.session.userObj.id;
+           getcoll('user').update({id},{$set:{pwd}},(err,info)=>{
+                if(!err){
+                    req.session.userObj = null
+                    res.json(msg(200,'修改成功'));
+                }else{
+                    res.json(msg(400,'修改失败'));
+                }
+           })
+        }else{
+            res.json(msg(500,'未登录'))
+        }
     }
 }
