@@ -39,14 +39,16 @@ module.exports = {
         function orderType (type,data){
             switch(type){
                 case 'insert': //插入操作
-                    data.orderId= new Date().getTime()
+                    data.orderId= new Date().getTime()*1
+                    data.tjTime = new Date()
                     data.type = 1
                     data.worker = '无'
-                    getcoll("order").insert(data,(err,info)=>{
+                    let obj = Object.assign( req.session.userObj,data)
+                    getcoll("order").insert(obj,(err,info)=>{
                         if(!err){
                             res.json(msg(200,'提交成功'))
                         }else{
-                            res.json(msg(400,'提交失败'))
+                            res.json(msg(400,'提交失败',err))
                         }
                     })
                     break;
@@ -79,9 +81,13 @@ module.exports = {
                     if(!req.session.userObj) res.json(msg(500,'未登录'));
                     let id = req.session.userObj.id;
                     let page = (data.page*1-1)*6;
-                    if(data.search.orderId )data.search.orderId *=1 ;
-                    if(data.search.orderId=='' )delete data.search.orderId;
-                    if(data.search.type)data.search.type*=1;
+                    if(data.search){
+                        if(data.search.orderId)data.search.orderId *=1 ;
+                        if(data.search.orderId=='')delete data.search.orderId;
+                        if(data.search.type)data.search.type*=1;
+                        if(!data.search.type) delete data.search.type;
+                    }
+                    console.log(data.search)
                     getcoll('order').find({id,...data.search}).skip(page).sort({tjTime:-1}).limit(6).toArray((err,list)=>{
                         if(!err){
                             getcoll('order').find({id,...data.search}).sort({tjTime:-1}).count({},(err,count)=>{
@@ -99,6 +105,39 @@ module.exports = {
         }
        
     },
+    orderTip(req,res){
+        if( req.session.userObj){
+            let id = req.session.userObj.id;
+            new Promise(resolve=>{
+                getcoll("order").find({id,type:1}).count({},(err,count)=>{
+                    if(!err){
+                        resolve({tip1:count})
+                    }else throw err;
+                })
+            }).then(val=>{
+                new Promise(resolve=>{
+                    getcoll("order").find({id,type:2}).count({},(err,count)=>{
+                        if(!err){
+                            val.tip2 = count
+                            resolve(val)
+                        }else throw err;
+                    })
+                }).then(val=>{
+                    getcoll("order").find({id,type:4}).count({},(err,count)=>{
+                        if(!err){
+                            val.tip3 = count
+                            res.json(msg(200,'成功',{val}))
+                        }else throw err;
+                    })
+                }).catch(err=>{
+                    console.log('catch:'+err)
+                    throw err;
+                })
+            })
+        }else{
+            res.json(msg(400,'未登入'))
+        }
+    }
   
 
 }

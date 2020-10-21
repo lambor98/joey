@@ -56,6 +56,7 @@ module.exports = {
         let {uname,pwd} = data;
         getcoll("user").find({uname}).toArray((err,list)=>{
             if(list[0] && list[0].pwd == pwd){
+                delete list[0]._id
                 req.session.userObj=list[0]
                 console.log(req.session.userList)
                 res.json(msg(200,"登陆成功",req.session.userObj));
@@ -119,17 +120,19 @@ module.exports = {
         // let {id} = req.body;
         // console.log(req.body)
         if(req.session.userObj){
-            res.json(msg(200,'',req.session.userObj))
+            let id = req.session.userObj.id
+            getcoll('user').find({id}).toArray((err,list)=>{
+                if(list[0]){
+                    res.json(msg(200,'',list[0]))
+                }else{
+                    res.json(msg(400,'不存在该用户'))
+                }
+            })
+            // res.json(msg(200,'',req.session.userObj))
         }else{
             res.json(msg(400,'未登录'))
         }
-        // getcoll('user').find({id}).toArray((err,list)=>{
-        //     if(list[0]){
-        //         res.json(msg(200,'',list[0]))
-        //     }else{
-        //         res.json(msg(400,'不存在该用户'))
-        //     }
-        // })
+        
         
     },
     updateUser(req,res){

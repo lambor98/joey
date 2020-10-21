@@ -46,6 +46,10 @@ router.post("/checkPwd",(req,res)=>{
 router.post("/updatePwd",(req,res)=>{ 
     user["updatePwd"](req,res);
 })
+router.post("/orderTip",(req,res)=>{ 
+    order["orderTip"](req,res);
+})
+
 
 
 
